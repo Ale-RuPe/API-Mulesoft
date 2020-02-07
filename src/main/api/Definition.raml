@@ -1,0 +1,24 @@
+#%RAML 0.8
+title: Contacts
+#http://localhost:8081/api/contacts
+
+/contacts:
+  post: 
+    body: 
+      application/json:
+    responses: 
+      200:
+        body: 
+          application/json:
+  get:
+    responses: 
+      200:
+        body: 
+          application/json:
+  /{id}:
+    get:
+      responses: 
+        200:
+          body: 
+            application/json:
+            

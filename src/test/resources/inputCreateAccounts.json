@@ -1,0 +1,23 @@
+[
+	{
+		"Name":"Salesforce.com",
+		"Industry":"Technology",
+		"Rating":"Hot",
+		"Active_c":"Yes",
+		"Type":"Technology Partner"
+	},
+	{
+		"Name":"IBM.com",
+		"Industry":"Technology",
+		"Rating":"Hot",
+		"Active_c":"Yes",
+		"Type":"Technology Partner"
+	},
+	{
+		"Name":"Mulesoft.com",
+		"Industry":"Technology",
+		"Rating":"Hot",
+		"Active_c":"Yes",
+		"Type":"Technology Partner"
+	}
+]

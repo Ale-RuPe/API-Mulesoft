@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:dw="http://www.mulesoft.org/schema/mule/ee/dw" xmlns:metadata="http://www.mulesoft.org/schema/mule/metadata" xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:sfdc="http://www.mulesoft.org/schema/mule/sfdc" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:spring="http://www.springframework.org/schema/beans" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd
+http://www.mulesoft.org/schema/mule/sfdc http://www.mulesoft.org/schema/mule/sfdc/current/mule-sfdc.xsd
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd
+http://www.mulesoft.org/schema/mule/ee/dw http://www.mulesoft.org/schema/mule/ee/dw/current/dw.xsd">
+	<sfdc:cached-basic-config name="Salesforce__Basic_Authentication" username="aruizp@ibm.com" password="$L#J$NDR=4l3" securityToken="IRYAJY7pMj7RlvkfWpQdqnQP6" doc:name="Salesforce: Basic Authentication" url="https://login.salesforce.com/services/Soap/u/40.0"/>
+	<sfdc:cached-basic-config name="Conf2" username="aruizp@ibm.com" password="$L#J$NDR=4l3" securityToken="IRYAJY7pMj7RlvkfWpQdqnQP6" doc:name="Salesforce: Basic Authentication"/>
+	
+	
+	
+	<flow name="primerejemploiFlow">
+		<choice doc:name="Choice">
+			<when expression="#[flowVars.id == empty]">
+				<sfdc:query config-ref="Salesforce__Basic_Authentication" query="SELECT Id, Name, Industry, Type,Active__c from Account ORDER BY Name" doc:name="getAllContacts"/>
+				<json:object-to-json-transformer doc:name="Object to JSON"/>
+				
+				<set-property propertyName="Access-Control-Allow-Origin" value="*" doc:name="Access-Control-Allow-Origin" />
+				<set-property propertyName="Access-Control-Allow-Headers" value="*" doc:name="Access-Control-Allow-Headers"/>
+				<set-property propertyName="Access-Control-Allow-Methods" value="*" doc:name="Access-Control-Allow-Methods" />
+			</when>
+			<otherwise>
+				<sfdc:query config-ref="Salesforce__Basic_Authentication" query="SELECT Id, Name, Industry, Type, Active__c from Account WHERE Id = '#[flowVars.id]'" doc:name="rsgetContactByFirstName"/>
+				<json:object-to-json-transformer doc:name="Object to JSON"/>
+				
+				<set-property propertyName="Access-Control-Allow-Origin" value="*" doc:name="Access-Control-Allow-Origin" />
+				<set-property propertyName="Access-Control-Allow-Headers" value="*" doc:name="Access-Control-Allow-Headers"/>
+				<set-property propertyName="Access-Control-Allow-Methods" value="*" doc:name="Access-Control-Allow-Methods" />
+			</otherwise>
+		</choice>
+	</flow>
+	<flow name="def:createContacts">
+		<dw:transform-message doc:name="Transform Message" metadata:id="ffe6d3c6-a277-4b0b-af0c-80bb4471be2b">
+			<dw:input-payload mimeType="application/json"/>
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/java
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	Name: payload01.Name,
+	Type: payload01.Type,
+	Industry: payload01.Industry,
+	Rating: payload01.Rating,
+	Active__c: payload01.Active_c
+}]]></dw:set-payload>
+		</dw:transform-message>
+		<sfdc:create config-ref="Conf2" type="Account" doc:name="createAccounts">
+			<sfdc:objects ref="#[payload]"/>
+		</sfdc:create>
+		<dw:transform-message doc:name="Transform Message" metadata:id="97195567-9bf6-4dfb-bf11-b88525b4dcd0">
+			<dw:set-payload><![CDATA[%dw 1.0
+%output application/json
+---
+payload map ((payload01 , indexOfPayload01) -> {
+	Id: payload01.id,
+	Success: payload01.success,
+	message: payload01.errors[0].message,
+	recordNumber: indexOfPayload01
+})]]></dw:set-payload>
+		</dw:transform-message>
+		<set-property propertyName="Access-Control-Allow-Origin" value="*" doc:name="Access-Control-Allow-Origin" />
+		<set-property propertyName="Access-Control-Allow-Headers" value="*" doc:name="Access-Control-Allow-Headers"/>
+		<set-property propertyName="Access-Control-Allow-Methods" value="*" doc:name="Access-Control-Allow-Methods" />
+		<set-payload value="#[payload]" doc:name="Set Payload"/>
+	</flow>
+</mule>
